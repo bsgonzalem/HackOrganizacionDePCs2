@@ -1,0 +1,146 @@
+CHIP CPU {
+
+    IN inM[16], instruction[16], reset;
+
+    OUT outM[16], writeM, addressM[15], pc[15];
+
+    PARTS:
+
+    Not(
+        in=instruction[15],
+        out=aInstruction
+    );
+
+    Mux16(
+        a=aluOutput,
+        b[15]=false,
+        b[0..14]=instruction[0..14],
+        sel=aInstruction,
+        out=aRegisterInput
+    );
+
+    Or(
+        a=aInstruction,
+        b=instruction[5],
+        out=aRegisterLoad
+    );
+
+    ARegister(
+        in=aRegisterInput,
+        load=aRegisterLoad,
+        out=aRegisterOutput,
+        out[0..14]=addressM
+    );
+
+    And(
+        a=instruction[15],
+        b=instruction[4],
+        out=dRegisterLoad
+    );
+
+    DRegister(
+        in=aluOutput,
+        load=dRegisterLoad,
+        out=dRegisterOutput
+    );
+
+    Mux16(
+        a=aRegisterOutput,
+        b=inM,
+        sel=instruction[12],
+        out=aluInputY
+    );
+
+    ALU(
+        x=dRegisterOutput,
+        y=aluInputY,
+        zx=instruction[11],
+        nx=instruction[10],
+        zy=instruction[9],
+        ny=instruction[8],
+        f=instruction[7],
+        no=instruction[6],
+        out=aluOutput,
+        out=outM,
+        zr=aluZero,
+        ng=aluNegative
+    );
+
+    And(
+        a=instruction[15],
+        b=instruction[3],
+        out=writeM
+    );
+
+    Not(
+        in=aluNegative,
+        out=aluPositiveOrZero
+    );
+
+    Not(
+        in=aluZero,
+        out=aluNotZero
+    );
+
+    And(
+        a=aluPositiveOrZero,
+        b=aluNotZero,
+        out=aluPositive
+    );
+
+    And(
+        a=instruction[15],
+        b=instruction[0],
+        out=jumpGTInstruction
+    );
+
+    And(
+        a=jumpGTInstruction,
+        b=aluPositive,
+        out=jumpGT
+    );
+
+    And(
+        a=instruction[15],
+        b=instruction[1],
+        out=jumpEQInstruction
+    );
+
+    And(
+        a=jumpEQInstruction,
+        b=aluZero,
+        out=jumpEQ
+    );
+
+    And(
+        a=instruction[15],
+        b=instruction[2],
+        out=jumpLTInstruction
+    );
+
+    And(
+        a=jumpLTInstruction,
+        b=aluNegative,
+        out=jumpLT
+    );
+
+    Or(
+        a=jumpGT,
+        b=jumpEQ,
+        out=jumpGTorEQ
+    );
+
+    Or(
+        a=jumpGTorEQ,
+        b=jumpLT,
+        out=jump
+    );
+
+    PC(
+        in=aRegisterOutput,
+        load=jump,
+        inc=true,
+        reset=reset,
+        out[0..14]=pc
+    );
+}
