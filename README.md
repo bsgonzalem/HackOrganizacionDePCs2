@@ -1,4 +1,6 @@
-# Práctica 2 - Construcción de la Plataforma Hack
+# Práctica 2 - Construcción de la Plataforma Hack: Lenguaje Máquina, CPU y Computador
+
+Docente: José Luis Montoya Pareja.
 
 ## Organización de Computadores
 
@@ -49,3 +51,4 @@ En la parte de hardware, la CPU recibe las instrucciones desde la ROM y se comun
 │   └── TESTS
 │
 └── README.md
+
