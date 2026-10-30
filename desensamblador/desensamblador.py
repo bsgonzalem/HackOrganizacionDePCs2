@@ -1,6 +1,7 @@
 from desensamblador.parser import Parser
 from desensamblador.code import Code
 
+
 class Disassembler:
 
     def __init__(self, file_path):
@@ -65,9 +66,10 @@ class Disassembler:
 
     def _generate_labels(self, instructions):
 
-        labels = {}
         instruction_count = len(instructions)
+        target_addresses = set()
 
+        # Identificar las direcciones de destino
         for index in range(1, instruction_count):
 
             current_instruction = instructions[index]
@@ -84,16 +86,35 @@ class Disassembler:
 
             target_address = previous_instruction["value"]
 
-            if target_address > instruction_count:
-                continue
+            if target_address <= instruction_count:
+                target_addresses.add(target_address)
 
-            if target_address not in labels:
-                labels[target_address] = f"L{len(labels)}"
+        # Asignar etiquetas en orden de dirección
+        labels = {
+            address: f"L{index}"
+            for index, address in enumerate(sorted(target_addresses))
+        }
 
-            previous_instruction["assembly"] = (
-                f"@{labels[target_address]}"
-            )
+        # Sustituir las direcciones A por etiquetas
+        for index in range(1, instruction_count):
 
+            current_instruction = instructions[index]
+            previous_instruction = instructions[index - 1]
+
+            if (
+                current_instruction["type"] == "C"
+                and current_instruction["jump"]
+                and previous_instruction["type"] == "A"
+            ):
+
+                target_address = previous_instruction["value"]
+
+                if target_address in labels:
+                    previous_instruction["assembly"] = (
+                        f"@{labels[target_address]}"
+                    )
+
+        # Construir el programa ensamblador
         assembly_program = []
 
         for index in range(instruction_count + 1):
