@@ -1,0 +1,11 @@
+@contador
+M=1
+@contador
+D=M
+@FIN
+D;JEQ
+@contador
+M=M-1
+(FIN)
+@FIN
+0;JMP
