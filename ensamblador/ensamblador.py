@@ -1,4 +1,3 @@
-
 import re
 
 from ensamblador.parser import Parser
@@ -36,23 +35,33 @@ class Assembler:
         for line_number, instruction in self.instructions:
 
             if instruction.startswith("(") or instruction.endswith(")"):
-                self._process_label(instruction, line_number, instruction_address)
+                self._process_label(
+                    instruction,
+                    line_number,
+                    instruction_address
+                )
             else:
                 instruction_address += 1
 
     def _process_label(self, instruction, line_number, address):
         if not (instruction.startswith("(") and instruction.endswith(")")):
-            self.errors.append((line_number, "Definición de etiqueta inválida."))
+            self.errors.append(
+                (line_number, "Definición de etiqueta inválida.")
+            )
             return
 
         symbol = instruction[1:-1]
 
-        if not re.match(self.SYMBOL_PATTERN, symbol):
-            self.errors.append((line_number, "Nombre de etiqueta inválido."))
+        if not re.fullmatch(self.SYMBOL_PATTERN, symbol):
+            self.errors.append(
+                (line_number, "Nombre de etiqueta inválido.")
+            )
             return
 
         if self.symbol_table.contains(symbol):
-            self.errors.append((line_number, f"Etiqueta duplicada o símbolo predefinido: {symbol}."))
+            self.errors.append(
+                (line_number, f"Etiqueta duplicada o símbolo predefinido: {symbol}.")
+            )
             return
 
         self.symbol_table.add_entry(symbol, address)
@@ -62,7 +71,7 @@ class Assembler:
 
         for line_number, instruction in self.instructions:
 
-            if instruction.startswith("(") and instruction.endswith(")"):
+            if instruction.startswith("(") or instruction.endswith(")"):
                 continue
 
             try:
@@ -90,7 +99,7 @@ class Assembler:
             if address > 32767:
                 raise ValueError("La dirección A debe estar entre 0 y 32767.")
 
-        elif re.match(self.SYMBOL_PATTERN, symbol):
+        elif re.fullmatch(self.SYMBOL_PATTERN, symbol):
             if self.symbol_table.contains(symbol):
                 address = self.symbol_table.get_address(symbol)
             else:

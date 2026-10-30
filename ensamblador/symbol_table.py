@@ -34,6 +34,10 @@ class SymbolTable:
 
     def add_variable(self, symbol):
         if not self.contains(symbol):
+
+            if self.variable_address > 32767:
+                raise ValueError("No hay direcciones disponibles para nuevas variables.")
+
             self.add_entry(symbol, self.variable_address)
             self.variable_address += 1
 
